@@ -64,16 +64,21 @@ void Play::runFirstCycle() {
 }
 
 void Play::tryGetBall() {
-    if (abs(bot.ballDirection) >= 4) { // Move behind ball with compass
+    if (abs(bot.ballDirection) >= 3) { // Move behind ball with compass
         moveBehindBall();
     }
+    int degreeBallDirection = bot.ballDirection * 360 / 16;
+    // Absolute ballDirection adjusted for bot rotation
+    int adjustedBallDirection = ((degreeBallDirection + bot.compassDirection + 180 + 360) % 360) - 180;
+    
+
 }
 
 void Play::moveBehindBall() {
     int ballDirection = abs(bot.ballDirection);
     int direction = 0;
     int speed = 0;
-    if (ballDirection >= 4 && ballDirection <= 7) {
+    if (ballDirection <= 7) {
         direction = 180;
         speed = 100;
     }
