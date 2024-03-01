@@ -7,14 +7,16 @@
 #include <elapsedMillis.h>
 
 
-#define AUS 0
-#define GRUEN 1
-#define ROT 2
-#define GELB 3
-#define BLAU 4
-#define CYAN 5
-#define MAGENTA 6
-#define WEISS 7
+enum FARBE {
+    AUS = 0,
+    GRUEN,
+    ROT,
+    GELB,
+    BLAU,
+    CYAN,
+    MAGENTA,
+    WEISS
+};
 
 #define led1r 5
 #define led1g 23
@@ -42,12 +44,10 @@
 #define INPUT3 39
 #define INPUT4 36
 
-#define kicker 17
 #define dribbler 2
+#define PIXY_ADDRESS 0x54
 #define IR_ADDRESS 0x55
-#define KOMPASS_ADRESSE 0x60 // cmps11, cmps12, cmps14
-
-#define ANGLE_8 1
+#define MAGNETOMETER_ADDRESS 0x60
 
 class Motor {
 public:
@@ -60,11 +60,11 @@ public:
 private:
     void setSpeed(int speed);
 
-    int currentNominalSpeed = 0;
+    int nominalSpeed = 0;
     int currentSpeed = 0;
-    int lastNominalSpeed = 0;
     int pin;
     int pwnChannel;
+    unsigned long lastRunMillis = 0;
 };
 
 class Bohlebots {
@@ -75,39 +75,64 @@ public:
     bool hasBall = false;
 
     int goalDirection = 0;
-    int goalDistance = 0;
     bool seesGoal = false;
+    //int goalDistance = 0;
 
     int ownGoalDirection = 0;
-    int ownGoalDistance = 0;
     bool seesOwnGoal = false;
+    //int ownGoalDistance = 0;
 
     Bohlebots();
 
     void init();
 
+    void updateBot();
+
     void wait(int ms);
 
     void drive(int direction, int speed, int rotation);
 
-    void ena(bool isEna); // TODO verstehen + portena usw
+    static int getInput(int input);
 
-    int getInput(int input);
+    bool get_i2c_Button(int device, int button);
 
-    bool getButton(int device, int button);
+    static bool getBoardButton(int button);
 
-    void setLED(int device, int color);
+    void set_i2c_LED(int device, int nr, int color);
+
+    static void setBoardLED(int led, int color);
+
+
 
 private:
-    int speedToPWM(int speed);
+    static void setRGB(int r, int g, int b, int color);
 
-    void getSensorData();
+    void sync_i2c_IO();
+
+    void getIRData();
+
+    void getMagnetometerData();
 
     void getPixyData();
 
     elapsedMillis delayMillisTimer = 0;
+    bool isMagnetometerEnabled = false;
+    bool isPixyEnabled = false;
+    Pixy2I2C pixy;
+    bool is_i2c_port_enabled[8] =
+            {false, false, false, false, false, false, false, false};
+    int i2c_button_adresses[8] =
+            {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27};
+
+    bool _i2c_button1_array[8] = {false, false, false, false, false, false, false, false};
+    bool _i2c_button2_array[8] = {false, false, false, false, false, false, false, false};
+    int _i2c_led1_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int _i2c_led2_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 
+    Motor motor1 = Motor(DRIVE1_DIR, 1);
+    Motor motor2 = Motor(DRIVE2_DIR, 2);
+    Motor motor3 = Motor(DRIVE3_DIR, 3);
 };
 
 

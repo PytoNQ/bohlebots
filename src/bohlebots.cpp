@@ -46,16 +46,16 @@ Bohlebots::Bohlebots() {
     ledcWrite(3, 0);
     ledcSetup(4, 1000, 8);
     ledcWrite(4, 0);
-    boardled(1, AUS);
-    boardled(2, AUS);
+    setBoardLED(1, AUS);
+    setBoardLED(2, AUS);
 }
 
 void Bohlebots::init() {
     for (int i = 0; i < 8; i++) {
-        Wire.beginTransmission(tastLedID[i]);
+        Wire.beginTransmission(i2c_button_adresses[i]);
         byte error = Wire.endTransmission();
         if (error == 0) {
-            portena[i] = true;
+            is_i2c_port_enabled[i] = true;
         }
 
 
@@ -63,33 +63,247 @@ void Bohlebots::init() {
         Serial.println(error == 0 ? "true" : "false");
 
     }
+
     delay(100);
-    Wire.beginTransmission(KOMPASS_ADRESSE);
+    Wire.beginTransmission(MAGNETOMETER_ADDRESS);
     byte error = Wire.endTransmission();
     if (error == 0) {
-        kompass_ena = true;
-        Serial.println("Kompass true");
-    } else { Serial.println("Kompass false"); }
-
-    if (hatPixy) {
-        Serial.print("Warte auf Pixy2 auf i2c 0x54...");
-        pixy.init(0x54);
-        Serial.println("done");
+        isMagnetometerEnabled = true;
     }
+
+    delay(100);
+    Wire.beginTransmission(PIXY_ADDRESS);
+    error = Wire.endTransmission();
+    if (error == 0) {
+        isPixyEnabled = true;
+        pixy.init(PIXY_ADDRESS);
+    }
+
+    Serial.print("Magnetometer : ");
+    Serial.println(isMagnetometerEnabled ? "true" : "false");
+    Serial.print("Pixy : ");
+    Serial.println(isPixyEnabled ? "true" : "false");
+    Serial.println("init done");
 }
 
 void Bohlebots::wait(int ms) {
     delayMillisTimer = 0;
-    getSensorData();
+    updateBot();
     while (delayMillisTimer < ms) {
         if (delayMillisTimer % 10 == 0) {
-            getSensorData();
+            updateBot();
         } else {
             delay(1);
         }
     }
 }
 
+void Bohlebots::updateBot() {
+    sync_i2c_IO();
+    getIRData();
+    getMagnetometerData();
+    getPixyData();
+    motor1.updateMotorSpeed();
+    motor2.updateMotorSpeed();
+    motor3.updateMotorSpeed();
+}
+
+
+/*
+ * ---------------------- I2C ----------------------
+ */
+
+void Bohlebots::sync_i2c_IO() {
+
+    for (int i = 0; i < 8; i++) {
+        if (!is_i2c_port_enabled[i]) {
+            continue;
+        }
+        int ledValue = 255 - _i2c_led1_array[i] - _i2c_led2_array[i];
+        Wire.beginTransmission(i2c_button_adresses[i]);
+        Wire.write(ledValue);
+        Wire.endTransmission();
+
+        Wire.requestFrom(i2c_button_adresses[i], 1);
+        if (Wire.available()) {
+            int data = 255 - Wire.read();
+            data %= 128;
+            _i2c_button2_array[i] = (data > 63);
+            data %= 2;
+            _i2c_button1_array[i] = (data > 0);
+        }
+    }
+}
+
+void Bohlebots::getIRData() {
+    int irRingData = 0;
+    Wire.requestFrom(IR_ADDRESS, 1);
+    if (Wire.available()) {
+        irRingData = Wire.read();
+    }
+    ballDistance = irRingData / 16; // not accurate
+    seesBall = ballDistance != 0;
+    ballDirection = seesBall ? (irRingData % 16) - 7 : 1000;
+}
+
+void Bohlebots::getMagnetometerData() {
+    /*
+     --- Kompass --- TODO
+     */
+}
+
+void Bohlebots::getPixyData() {
+    if (!isPixyEnabled) {
+        return;
+    }
+    pixy.ccc.getBlocks();
+    seesGoal = false;
+    seesOwnGoal = false;
+
+    if (pixy.ccc.numBlocks == 0) {
+        return;
+    }
+
+    Block block = pixy.ccc.blocks[0];
+    if (block.m_signature == 1) { // Goal
+        seesGoal = true;
+        goalDirection = block.m_x - 79; //316/4; 316 is pixy width
+    } else if (block.m_signature == 2) { // own Goal
+        seesOwnGoal = true;
+        ownGoalDirection = block.m_x - 79;
+    }
+}
+
+/*
+ * ---------------------- IO ----------------------
+ */
+
+void Bohlebots::set_i2c_LED(int device, int nr, int color) {
+    if (device < 0 || device > 7) {
+        return;
+    }
+    if (color < 0 || color > 7) {
+        return;
+    }
+
+    if (nr == 1) {
+        _i2c_led1_array[device] = color * 2;
+    }
+    if (nr == 2) {
+        color *= 16;
+        if (color > 63) {
+            color += 64;
+        }
+        _i2c_led2_array[device] = color;
+    }
+}
+
+bool Bohlebots::get_i2c_Button(int device, int button) {
+    if (device < 0 || device > 7) {
+        return false;
+    }
+    if (button == 1) {
+        return _i2c_button1_array[device];
+    }
+    if (button == 2) {
+        return _i2c_button2_array[device];
+    }
+    return false;
+}
+
+void Bohlebots::setBoardLED(int led, int color) {
+    if (color < 0 || color > 7) {
+        return;
+    }
+    if (led == 1) {
+        setRGB(led1r, led1g, led1b, color);
+
+    }
+    if (led == 2) {
+        setRGB(led2r, led2g, led2b, color);
+    }
+}
+
+void Bohlebots::setRGB(int r, int g, int b, int color) {
+    digitalWrite(r, !(color & 2));
+    digitalWrite(g, !(color & 1));
+    digitalWrite(b, !(color & 4));
+}
+
+bool Bohlebots::getBoardButton(int button) {
+    return getInput(button) == 0;
+}
+
+int Bohlebots::getInput(int input) {
+    if (input == 1) {
+        return analogRead(INPUT1);
+    }
+    if (input == 2) {
+        return analogRead(INPUT2);
+    }
+    if (input == 3) {
+        return analogRead(INPUT3);
+    }
+    if (input == 4) {
+        return analogRead(INPUT4);
+    }
+    return 4096;
+}
+
+/*
+ * ---------------------- FAHREN -----------------------
+ */
+
+void Bohlebots::drive(int direction, int speed, int rotation) {
+    direction /= 60;
+    int max = std::abs(speed) + std::abs(rotation);
+    if (max > 100) {
+        speed = speed * 100 / max;
+        rotation = rotation * 100 / max;
+    }
+
+    if (direction == 0) // geradeaus
+    {
+        motor1.drive(-speed + rotation);
+        motor2.drive(+rotation);
+        motor3.drive(speed + rotation);
+    }
+
+    if (direction == 1) // 60 Grad rechts
+    {
+        motor1.drive(+rotation);
+        motor2.drive(-speed + rotation);
+        motor3.drive(speed + rotation);
+    }
+
+    if (direction == -1) // -60 Grad links
+    {
+        motor1.drive(-speed + rotation);
+        motor2.drive(speed + rotation);
+        motor3.drive(+rotation);
+    }
+
+    if (direction == 3) // zurück
+    {
+        motor1.drive(speed + rotation);
+        motor2.drive(+rotation);
+        motor3.drive(-speed + rotation);
+    }
+
+    if (direction == -2) // -120 Grad links
+    {
+        motor1.drive(+rotation);
+        motor2.drive(speed + rotation);
+        motor3.drive(-speed + rotation);
+    }
+
+    if (direction == 2) // 120 Grad rechts
+    {
+        motor1.drive(speed + rotation);
+        motor2.drive(-speed + rotation);
+        motor3.drive(+rotation);
+    }
+}
 
 /*
  * ---------------------- MOTOREN ----------------------
@@ -99,10 +313,27 @@ Motor::Motor(int pin, int pwnChannel) {
     this->pwnChannel = pwnChannel;
 }
 
+void Motor::drive(int speed) {
+    this->nominalSpeed = speed;
+}
+
 void Motor::setSpeed(int speed) {
+    this->currentSpeed = speed;
     speed = std::min(std::max(speed, -100), 100);
     int pwm = static_cast<int>(std::round(std::abs(speed) * 2.55));
     int dir = speed < 0 ? LOW : HIGH;
     digitalWrite(pin, dir);
     ledcWrite(pwnChannel, pwm);
+}
+
+
+void Motor::updateMotorSpeed() {
+    if (nominalSpeed == currentSpeed) {
+        return;
+    }
+    unsigned long currentMillis = millis();
+    auto deltatime = static_cast<float>((currentMillis - lastRunMillis) / 1000.0);
+    lastRunMillis = currentMillis;
+    int change = static_cast<int>(round(static_cast<float>((nominalSpeed - currentSpeed)) * deltatime * 200));
+    setSpeed(currentSpeed + change);
 }
