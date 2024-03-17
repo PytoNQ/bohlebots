@@ -92,20 +92,23 @@ public:
 
     void drive(int direction, int speed, int rotation);
 
-    static int getInput(int input);
+    int getInput(int input);
 
     bool get_i2c_Button(int device, int button);
 
-    static bool getBoardButton(int button);
+    bool getBoardButton(int button);
 
     void set_i2c_LED(int device, int nr, int color);
 
-    static void setBoardLED(int led, int color);
+    void setBoardLED(int led, int color);
 
+    void showDebugInfo();
+
+    void firstCycle();
 
 
 private:
-    static void setRGB(int r, int g, int b, int color);
+    void setRGB(int r, int g, int b, int color);
 
     void sync_i2c_IO();
 

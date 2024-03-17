@@ -109,6 +109,31 @@ void Bohlebots::updateBot() {
 }
 
 
+void Bohlebots::showDebugInfo() {
+    if (!this->getBoardButton(3)) {
+        this->set_i2c_LED(1, 1, 0);
+        this->set_i2c_LED(1, 2, 0);
+        return;
+    }
+
+    if (this->seesBall) {
+        this->set_i2c_LED(1, 1, BLAU);
+    } else {
+        this->set_i2c_LED(1, 1, MAGENTA);
+    }
+
+    if (this->seesGoal) {
+        this->set_i2c_LED(1, 2, ROT);
+    } else if (this->seesOwnGoal) {
+        this->set_i2c_LED(1, 2, GRUEN);
+    } else {
+        this->set_i2c_LED(1, 2, MAGENTA);
+    }
+
+}
+
+
+
 /*
  * ---------------------- I2C ----------------------
  */
