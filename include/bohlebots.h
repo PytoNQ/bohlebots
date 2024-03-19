@@ -106,7 +106,7 @@ public:
 
     void setBoardLED(int led, int color);
 
-    void calibrateCompass();
+    void setCompassHeading();
 
 
 private:
@@ -122,8 +122,10 @@ private:
 
     void getPixyData();
 
+    int compassHeading = 0;
+
     elapsedMillis delayMillisTimer = 0;
-    bool isMagnetometerEnabled = false;
+    bool isCompassEnabled = false;
     bool isPixyEnabled = false;
     Pixy2I2C pixy;
     bool is_i2c_port_enabled[8] =

@@ -68,7 +68,7 @@ void Bohlebots::init() {
     Wire.beginTransmission(COMPASS_ADDRESS);
     byte error = Wire.endTransmission();
     if (error == 0) {
-        isMagnetometerEnabled = true;
+        isCompassEnabled = true;
     }
 
     delay(100);
@@ -79,8 +79,8 @@ void Bohlebots::init() {
         pixy.init(PIXY_ADDRESS);
     }
 
-    Serial.print("Magnetometer : ");
-    Serial.println(isMagnetometerEnabled ? "true" : "false");
+    Serial.print("Compass : ");
+    Serial.println(isCompassEnabled ? "true" : "false");
     Serial.print("Pixy : ");
     Serial.println(isPixyEnabled ? "true" : "false");
     Serial.println("init done");
@@ -150,16 +150,28 @@ void Bohlebots::getIRData() {
 }
 
 void Bohlebots::getCompassData() {
+    if (!isCompassEnabled) {
+        return;
+    }
     Wire.beginTransmission(COMPASS_ADDRESS);
     Wire.write(0x01);
-    Wire.endTransmission(false);
+    Wire.endTransmission();
     Wire.requestFrom(COMPASS_ADDRESS, 2);
+    if (Wire.available() >= 2) {
+        int high = Wire.read();
+        int low = Wire.read();
+        compassDirection = ((high << 8) | low) * 360;
+        compassDirection /= 65536;
+        compassDirection = ((compassDirection - compassHeading + 180 + 360) % 360) - 180;
 
-    int16_t rawCompassData = Wire.read() << 8 | Wire.read();
+    }
 
-    Serial.println(rawCompassData);
+}
 
-
+void Bohlebots::setCompassHeading() {
+    compassHeading = 0;
+    getCompassData();
+    compassHeading = compassDirection;
 }
 
 void Bohlebots::getPixyData() {
