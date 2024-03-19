@@ -65,7 +65,7 @@ void Bohlebots::init() {
     }
 
     delay(100);
-    Wire.beginTransmission(MAGNETOMETER_ADDRESS);
+    Wire.beginTransmission(COMPASS_ADDRESS);
     byte error = Wire.endTransmission();
     if (error == 0) {
         isMagnetometerEnabled = true;
@@ -101,36 +101,14 @@ void Bohlebots::wait(int ms) {
 void Bohlebots::updateBot() {
     sync_i2c_IO();
     getIRData();
-    getMagnetometerData();
+    getUSData();
+    getCompassData();
     getPixyData();
     motor1.updateMotorSpeed();
     motor2.updateMotorSpeed();
     motor3.updateMotorSpeed();
 }
 
-
-void Bohlebots::showDebugInfo() {
-    if (!this->getBoardButton(3)) {
-        this->set_i2c_LED(1, 1, 0);
-        this->set_i2c_LED(1, 2, 0);
-        return;
-    }
-
-    if (this->seesBall) {
-        this->set_i2c_LED(1, 1, BLAU);
-    } else {
-        this->set_i2c_LED(1, 1, MAGENTA);
-    }
-
-    if (this->seesGoal) {
-        this->set_i2c_LED(1, 2, ROT);
-    } else if (this->seesOwnGoal) {
-        this->set_i2c_LED(1, 2, GRUEN);
-    } else {
-        this->set_i2c_LED(1, 2, MAGENTA);
-    }
-
-}
 
 
 
@@ -171,10 +149,17 @@ void Bohlebots::getIRData() {
     ballDirection = seesBall ? (irRingData % 16) - 7 : 1000;
 }
 
-void Bohlebots::getMagnetometerData() {
-    /*
-     --- Kompass --- TODO
-     */
+void Bohlebots::getCompassData() {
+    Wire.beginTransmission(COMPASS_ADDRESS);
+    Wire.write(0x01);
+    Wire.endTransmission(false);
+    Wire.requestFrom(COMPASS_ADDRESS, 2);
+
+    int16_t rawCompassData = Wire.read() << 8 | Wire.read();
+
+    Serial.println(rawCompassData);
+
+
 }
 
 void Bohlebots::getPixyData() {
@@ -196,6 +181,15 @@ void Bohlebots::getPixyData() {
     } else if (block.m_signature == 2) { // own Goal
         seesOwnGoal = true;
         ownGoalDirection = block.m_x - 79;
+    }
+}
+
+void Bohlebots::getUSData() {
+    Wire.requestFrom(US_ADDRESS, sizeof(distances));
+
+    if (Wire.available() >= sizeof(distances)) {
+        Wire.readBytes((uint8_t *) distances, sizeof(distances));
+
     }
 }
 

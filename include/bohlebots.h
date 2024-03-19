@@ -47,7 +47,8 @@ enum FARBE {
 #define dribbler 2
 #define PIXY_ADDRESS 0x54
 #define IR_ADDRESS 0x55
-#define MAGNETOMETER_ADDRESS 0x60
+#define US_ADDRESS 0x56
+#define COMPASS_ADDRESS 0x60
 
 class Motor {
 public:
@@ -69,6 +70,7 @@ private:
 
 class Bohlebots {
 public:
+    int distances[4] = {0, 0, 0, 0};
     int ballDirection = 0;
     int ballDistance = 0;
     bool seesBall = false;
@@ -81,6 +83,8 @@ public:
     int ownGoalDirection = 0;
     bool seesOwnGoal = false;
     //int ownGoalDistance = 0;
+
+    int compassDirection = 0;
 
     Bohlebots();
 
@@ -102,9 +106,7 @@ public:
 
     void setBoardLED(int led, int color);
 
-    void showDebugInfo();
-
-    void firstCycle();
+    void calibrateCompass();
 
 
 private:
@@ -114,7 +116,9 @@ private:
 
     void getIRData();
 
-    void getMagnetometerData();
+    void getUSData();
+
+    void getCompassData();
 
     void getPixyData();
 

@@ -1,5 +1,11 @@
 #include "play.h"
 
+Bohlebots bot;
+
+int getSign(int num) {
+    return num < 0 ? -1 : 1;
+}
+
 void Strategy::run() {
     if (!this->isEnabled && this->canBeDisabled) { return; }
 
@@ -19,20 +25,51 @@ void Strategy::setEnabled(bool _isEnabled) {
 }
 
 void Idle::main() {
-    // do nothing
+    if (!bot.getBoardButton(3)) {
+        bot.set_i2c_LED(1, 1, 0);
+        bot.set_i2c_LED(1, 2, 0);
+        return;
+    }
+    if (bot.seesBall) {
+        bot.set_i2c_LED(1, 1, BLAU);
+    } else {
+        bot.set_i2c_LED(1, 1, MAGENTA);
+    }
+    if (bot.seesGoal) {
+        bot.set_i2c_LED(1, 2, ROT);
+    } else if (bot.seesOwnGoal) {
+        bot.set_i2c_LED(1, 2, GRUEN);
+    } else {
+        bot.set_i2c_LED(1, 2, MAGENTA);
+    }
 }
 
 void Idle::runFirstCycle() {
-    // do nothing
+
 }
 
 void Play::main() {
 
+    if (!bot.seesBall) {
+        return;
+    }
+    if (!bot.hasBall) {
+        tryGetBall();
+    }
 }
 
 void Play::runFirstCycle() {
 
 }
+
+void Play::tryGetBall() {
+    if (abs(bot.ballDirection) >= 3) { // Move behind ball with compass
+
+    }
+
+}
+
+
 
 void Anstoss::main() {
 

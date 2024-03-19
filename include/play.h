@@ -5,6 +5,15 @@
 #ifndef ZWAMBO_PLAY_H
 #define ZWAMBO_PLAY_H
 
+#include <Wire.h>
+#include <Arduino.h>
+#include "bohlebots.h"
+
+extern Bohlebots bot;
+
+int getSign(int num);
+
+
 class Strategy {
 public:
     Strategy() : isEnabled(false), isFirstCycle(true), canBeDisabled(true) {}
@@ -46,6 +55,12 @@ private:
     void main() override;
 
     void runFirstCycle() override;
+
+    void tryGetBall();
+
+    int calculateGoalRotation(int drehMod);
+
+
 };
 
 
