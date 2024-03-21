@@ -58,7 +58,7 @@ private:
 
     void tryGetBall();
 
-    int calculateGoalRotation(int drehMod);
+    void moveBehindBall();
 
 
 };

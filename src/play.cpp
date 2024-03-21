@@ -59,13 +59,32 @@ void Play::main() {
 }
 
 void Play::runFirstCycle() {
-
+    bot.set_i2c_LED(1, 1, BLAU);
+    bot.setCompassHeading();
 }
 
 void Play::tryGetBall() {
-    if (abs(bot.ballDirection) >= 3) { // Move behind ball with compass
-
+    if (abs(bot.ballDirection) >= 4) { // Move behind ball with compass
+        moveBehindBall();
     }
+}
+
+void Play::moveBehindBall() {
+    int ballDirection = abs(bot.ballDirection);
+    int direction = 0;
+    int speed = 0;
+    if (ballDirection >= 4 && ballDirection <= 7) {
+        direction = 180;
+        speed = 100;
+    }
+    if (ballDirection == 8) {
+        int sign = getSign(bot.ballDirection); //TODO check for walls in the way etc
+        speed = 100;
+        direction = 120 * sign;
+    }
+    int rotation = -bot.compassDirection; //TODO test rotation modifiers
+
+    bot.drive(direction, speed, rotation);
 
 }
 
