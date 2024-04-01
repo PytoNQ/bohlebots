@@ -94,7 +94,7 @@ public:
 
     void wait(int ms);
 
-    void drive(int direction, int speed, int rotation);
+    void drive(float x, float y, float w);
 
     int getInput(int input);
 
@@ -139,9 +139,12 @@ private:
     int _i2c_led2_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 
-    Motor motor1 = Motor(DRIVE1_DIR, 1);
-    Motor motor2 = Motor(DRIVE2_DIR, 2);
-    Motor motor3 = Motor(DRIVE3_DIR, 3);
+    Motor motor1 = Motor(DRIVE1_DIR, 1); // links
+    Motor motor2 = Motor(DRIVE2_DIR, 2); // rechts
+    Motor motor3 = Motor(DRIVE3_DIR, 3); // vorne
+
+
+
 };
 
 

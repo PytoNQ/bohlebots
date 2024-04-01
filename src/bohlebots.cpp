@@ -51,6 +51,7 @@ Bohlebots::Bohlebots() {
 }
 
 void Bohlebots::init() {
+
     for (int i = 0; i < 8; i++) {
         Wire.beginTransmission(i2c_button_adresses[i]);
         byte error = Wire.endTransmission();
@@ -285,56 +286,13 @@ int Bohlebots::getInput(int input) {
  * ---------------------- FAHREN -----------------------
  */
 
-void Bohlebots::drive(int direction, int speed, int rotation) {
-    direction /= 60;
-    int max = std::abs(speed) + std::abs(rotation);
-    if (max > 100) {
-        speed = speed * 100 / max;
-        rotation = rotation * 100 / max;
-    }
+void Bohlebots::drive(float x_speed, float y_speed, float w_speed) {
+    motor1.drive(x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed);
+    motor2.drive(x_speed + w_speed);
+    motor3.drive(x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed);
 
-    if (direction == 0) // geradeaus
-    {
-        motor1.drive(-speed + rotation);
-        motor2.drive(+rotation);
-        motor3.drive(speed + rotation);
-    }
-
-    if (direction == 1) // 60 Grad rechts
-    {
-        motor1.drive(+rotation);
-        motor2.drive(-speed + rotation);
-        motor3.drive(speed + rotation);
-    }
-
-    if (direction == -1) // -60 Grad links
-    {
-        motor1.drive(-speed + rotation);
-        motor2.drive(speed + rotation);
-        motor3.drive(+rotation);
-    }
-
-    if (direction == 3) // zurück
-    {
-        motor1.drive(speed + rotation);
-        motor2.drive(+rotation);
-        motor3.drive(-speed + rotation);
-    }
-
-    if (direction == -2) // -120 Grad links
-    {
-        motor1.drive(+rotation);
-        motor2.drive(speed + rotation);
-        motor3.drive(-speed + rotation);
-    }
-
-    if (direction == 2) // 120 Grad rechts
-    {
-        motor1.drive(speed + rotation);
-        motor2.drive(-speed + rotation);
-        motor3.drive(+rotation);
-    }
 }
+
 
 /*
  * ---------------------- MOTOREN ----------------------
