@@ -44,7 +44,6 @@ enum FARBE {
 #define INPUT3 39
 #define INPUT4 36
 
-#define dribbler 2
 #define PIXY_ADDRESS 0x54
 #define IR_ADDRESS 0x55
 #define US_ADDRESS 0x56
@@ -58,8 +57,10 @@ public:
 
     void updateMotorSpeed();
 
-private:
     void setSpeed(int speed);
+
+
+private:
 
     int nominalSpeed = 0;
     int currentSpeed = 0;
@@ -94,7 +95,7 @@ public:
 
     void wait(int ms);
 
-    void drive(float x, float y, float w);
+    void drive(double x, double y, double w, int scale);
 
     int getInput(int input);
 

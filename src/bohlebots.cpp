@@ -101,7 +101,7 @@ void Bohlebots::wait(int ms) {
 
 void Bohlebots::updateBot() {
     sync_i2c_IO();
-    getIRData();
+//    getIRData();
     getUSData();
     getCompassData();
     getPixyData();
@@ -286,10 +286,34 @@ int Bohlebots::getInput(int input) {
  * ---------------------- FAHREN -----------------------
  */
 
-void Bohlebots::drive(float x_speed, float y_speed, float w_speed) {
-    motor1.drive(x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed);
-    motor2.drive(x_speed + w_speed);
-    motor3.drive(x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed);
+void Bohlebots::drive(double x_speed, double y_speed, double w_speed, int scale) {
+
+    if (abs(compassDirection) > 7) {
+        w_speed = 10 * (compassDirection < 0 ? -1 : 1);
+    }
+
+    double m1 = x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed;
+    double m2 = -x_speed + w_speed;
+    double m3 = x_speed / 2 - y_speed * sqrt(3) / 2 + w_speed;
+
+    double max = std::max({std::abs(m1), std::abs(m2), std::abs(m3)});
+
+    m1 = m1 / max * scale;
+    m2 = m2 / max * scale;
+    m3 = m3 / max * scale;
+
+    Serial.print("m1: ");
+    Serial.println(m1);
+    Serial.print("m2: ");
+    Serial.println(m2);
+    Serial.print("m3: ");
+    Serial.println(m3);
+    Serial.println(" ");
+
+    motor1.drive(static_cast<int>(m1));
+    motor2.drive(static_cast<int>(m2));
+    motor3.drive(static_cast<int>(m3));
+
 
 }
 
@@ -304,6 +328,7 @@ Motor::Motor(int pin, int pwnChannel) {
 
 void Motor::drive(int speed) {
     this->nominalSpeed = speed;
+    this->setSpeed(speed);
 }
 
 void Motor::setSpeed(int speed) {
@@ -317,12 +342,13 @@ void Motor::setSpeed(int speed) {
 
 
 void Motor::updateMotorSpeed() {
+    return; //TDOD fix
     if (nominalSpeed == currentSpeed) {
         return;
     }
     unsigned long currentMillis = millis();
-    auto deltatime = static_cast<float>((currentMillis - lastRunMillis) / 1000.0);
+    auto deltatime = static_cast<double>((currentMillis - lastRunMillis) / 1000.0);
     lastRunMillis = currentMillis;
-    int change = static_cast<int>(round(static_cast<float>((nominalSpeed - currentSpeed)) * deltatime * 200));
+    int change = static_cast<int>(round(static_cast<double>((nominalSpeed - currentSpeed)) * deltatime * 200));
     setSpeed(currentSpeed + change);
 }
