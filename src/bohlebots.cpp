@@ -163,16 +163,16 @@ void Bohlebots::getCompassData() {
         int low = Wire.read();
         compassDirection = ((high << 8) | low) * 360;
         compassDirection /= 65536;
-        compassDirection = ((compassDirection - compassHeading + 180 + 360) % 360) - 180;
+        compassDirection = ((compassDirection - compassOffset + 180 + 360) % 360) - 180;
 
     }
 
 }
 
 void Bohlebots::setCompassHeading() {
-    compassHeading = 0;
+    compassOffset = 0;
     getCompassData();
-    compassHeading = compassDirection;
+    compassOffset = compassDirection;
 }
 
 void Bohlebots::getPixyData() {
@@ -286,7 +286,10 @@ int Bohlebots::getInput(int input) {
  * ---------------------- FAHREN -----------------------
  */
 
-void Bohlebots::drive(int direction, int speed, int rotation) {
+void Bohlebots::drive(int direction, int speed) {
+    int rotationOffset = botRotation - compassDirection;
+
+    int rotation = sqrt(rotationOffset) * 2;
     direction /= 60;
     int max = std::abs(speed) + std::abs(rotation);
     if (max > 100) {
@@ -337,6 +340,10 @@ void Bohlebots::drive(int direction, int speed, int rotation) {
     }
 }
 
+void Bohlebots::setRotation(int _botRotation) {
+    botRotation = _botRotation;
+}
+
 
 /*
  * ---------------------- MOTOREN ----------------------
@@ -372,3 +379,14 @@ void Motor::updateMotorSpeed() {
     int change = static_cast<int>(round(static_cast<double>((nominalSpeed - currentSpeed)) * deltatime * 200));
     setSpeed(currentSpeed + change);
 }
+
+/*
+ * ---------------------- TIME BASED INT CHANGER ----------------------
+ */
+
+void TimeBasedIntChanger::start(int _goal, int _duration) {
+    startTime = _duration();
+    duration = _duration;
+    target = _goal;
+}
+

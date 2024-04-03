@@ -69,8 +69,47 @@ private:
     unsigned long lastRunMillis = 0;
 };
 
+class TimeBasedIntChanger {
+    unsigned long startTime = 0;
+    int number = 0;
+    int duration = 0;
+    int goal = 0;
+public:
+    void start(int _goal, int _duration);
+
+    void update();
+};
+
 class Bohlebots {
 public:
+
+
+    Bohlebots();
+
+    void init();
+
+    void updateBot();
+
+    void wait(int ms);
+
+    void drive(int direction, int speed);
+
+
+    int getInput(int input);
+
+    bool get_i2c_Button(int device, int button);
+
+    bool getBoardButton(int button);
+
+    void set_i2c_LED(int device, int nr, int color);
+
+    void setBoardLED(int led, int color);
+
+    void setCompassHeading();
+
+    void setRotation(int _botRotation);
+
+
     int distances[4] = {0, 0, 0, 0};
     int ballDirection = 0;
     int ballDistance = 0;
@@ -87,28 +126,6 @@ public:
 
     int compassDirection = 0;
 
-    Bohlebots();
-
-    void init();
-
-    void updateBot();
-
-    void wait(int ms);
-
-    void drive(int direction, int speed, int rotation);
-
-    int getInput(int input);
-
-    bool get_i2c_Button(int device, int button);
-
-    bool getBoardButton(int button);
-
-    void set_i2c_LED(int device, int nr, int color);
-
-    void setBoardLED(int led, int color);
-
-    void setCompassHeading();
-
 
 private:
     void setRGB(int r, int g, int b, int color);
@@ -123,7 +140,8 @@ private:
 
     void getPixyData();
 
-    int compassHeading = 0;
+
+    int compassOffset = 0;
 
     elapsedMillis delayMillisTimer = 0;
     bool isCompassEnabled = false;
@@ -144,6 +162,8 @@ private:
     Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
     Motor motor3 = Motor(DRIVE3_DIR, 3); // links
 
+
+    int botRotation = 0;
 
 
 };

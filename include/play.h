@@ -57,6 +57,7 @@ private:
     void moveBehindBall();
 
 
+    void moveToOwnGoal();
 };
 
 

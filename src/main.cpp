@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "play.h"
 
+
 bool isEnabled = false;
 Strategy *strategies[] = {new Idle(), new Play(), new Anstoss(1), new Anstoss(-1), new Debug()};
 int strategyColors[5] = {AUS, GRUEN, BLAU, ROT, MAGENTA};
