@@ -2,34 +2,23 @@
 
 Bohlebots bot;
 
-int getSign(int num) {
-    return num < 0 ? -1 : 1;
-}
 
-void Strategy::run() {
-    if (!this->isEnabled && this->canBeDisabled) { return; }
+void Strategy::run(bool runFirstCycle, bool isEnabled) {
+    if (!isEnabled) { // If the strategy is not enabled, run the disabled function
+        this->disabledFunction();
+        return;
+    }
 
-    if (this->isFirstCycle) {
-        this->runFirstCycle();
-        this->isFirstCycle = false;
+    if (runFirstCycle) {
+        this->firstCycleFunction();
     }
     this->main();
 
 }
 
-void Strategy::setEnabled(bool _isEnabled) {
-    this->isEnabled = _isEnabled;
-    if (!_isEnabled) {
-        this->isFirstCycle = true;
-    }
-}
+
 
 void Idle::main() {
-    if (!bot.getBoardButton(3)) {
-        bot.set_i2c_LED(1, 1, 0);
-        bot.set_i2c_LED(1, 2, 0);
-        return;
-    }
     if (bot.seesBall) {
         bot.set_i2c_LED(1, 1, BLAU);
     } else {
@@ -44,7 +33,12 @@ void Idle::main() {
     }
 }
 
-void Idle::runFirstCycle() {
+void Idle::disabledFunction() {
+    bot.set_i2c_LED(1, 1, 0);
+    bot.set_i2c_LED(1, 2, 0);
+}
+
+void Idle::firstCycleFunction() {
 
 }
 
@@ -58,10 +52,17 @@ void Play::main() {
 
 }
 
-void Play::runFirstCycle() {
+
+void Play::firstCycleFunction() {
     bot.set_i2c_LED(1, 1, BLAU);
     bot.setCompassHeading();
 }
+
+void Play::disabledFunction() {
+
+}
+
+
 
 void Play::tryGetBall() {
     if (abs(bot.ballDirection) >= 3) { // Move behind ball with compass
@@ -84,15 +85,22 @@ void Anstoss::main() {
 
 }
 
-void Anstoss::runFirstCycle() {
+void Anstoss::disabledFunction() {
+
+}
+
+void Anstoss::firstCycleFunction() {
 
 }
 
 void Debug::main() {
-    bot.drive(1, 0, 0, 50);
 }
 
-void Debug::runFirstCycle() {
+void Debug::disabledFunction() {
+
+}
+
+void Debug::firstCycleFunction() {
     bot.set_i2c_LED(1, 1, ROT);
     bot.setCompassHeading();
 }

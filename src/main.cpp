@@ -21,16 +21,18 @@ void testButtons() {
         if (currentStrategy == 0) {
             currentStrategy = 1;
         }
-        strategies[currentStrategy]->setEnabled(true);
+        strategies[currentStrategy]->run(true, true);
+        isEnabled = true;
     }
     if (bot.get_i2c_Button(1, 2)) {
-        strategies[currentStrategy]->setEnabled(false);
+        isEnabled = false;
         currentStrategy = 0;
+
     }
     if (bot.getBoardButton(1)) {
         if (!modusButtonPressed) {
             modusButtonPressed = true;
-            strategies[currentStrategy]->setEnabled(false);
+            isEnabled = false;
             currentStrategy = (currentStrategy + 1) % sizeof(strategies);
             bot.setBoardLED(1, strategyColors[currentStrategy]);
         }
@@ -40,9 +42,6 @@ void testButtons() {
 void loop() {
     bot.wait(5);
     testButtons();
-    strategies[currentStrategy]->run();
-    Serial.println(bot.compassDirection);
-    if (bot.getBoardButton(2)) {
-        bot.setCompassHeading();
-    }
+    strategies[currentStrategy]->run(false, isEnabled);
+
 }

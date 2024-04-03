@@ -16,34 +16,28 @@ int getSign(int num);
 
 class Strategy {
 public:
-    Strategy() : isEnabled(false), isFirstCycle(true), canBeDisabled(true) {}
+    void run(bool runFirstCycle, bool isEnabled);
 
-    void run();
-
-    virtual void setEnabled(bool _isEnabled);
-
-protected:
-    bool canBeDisabled = true;
-    bool isEnabled = false;
-    bool isFirstCycle = true;
 private:
     virtual void main() = 0;
 
-    virtual void runFirstCycle() = 0;
+    virtual void disabledFunction() = 0;
+
+    virtual void firstCycleFunction() = 0;
 };
 
 
 class Idle : public Strategy {
 public:
-    Idle() : Strategy() {
-        this->canBeDisabled = false;
-    }
+    Idle() : Strategy() {}
 
 
 private:
     void main() override;
 
-    void runFirstCycle() override;
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
 };
 
 
@@ -54,7 +48,9 @@ public:
 private:
     void main() override;
 
-    void runFirstCycle() override;
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
 
     void tryGetBall();
 
@@ -71,7 +67,9 @@ public:
 private:
     void main() override;
 
-    void runFirstCycle() override;
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
 
     int direction = 0;
 };
@@ -79,14 +77,14 @@ private:
 
 class Debug : public Strategy {
 public:
-    Debug() : Strategy() {
-        this->canBeDisabled = false;
-    }
+    Debug() : Strategy() {}
 
 private:
     void main() override;
 
-    void runFirstCycle() override;
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
 };
 
 
