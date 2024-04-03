@@ -286,35 +286,55 @@ int Bohlebots::getInput(int input) {
  * ---------------------- FAHREN -----------------------
  */
 
-void Bohlebots::drive(double x_speed, double y_speed, double w_speed, int scale) {
-
-    if (abs(compassDirection) > 7) {
-        w_speed = 10 * (compassDirection < 0 ? -1 : 1);
+void Bohlebots::drive(int direction, int speed, int rotation) {
+    direction /= 60;
+    int max = std::abs(speed) + std::abs(rotation);
+    if (max > 100) {
+        speed = speed * 100 / max;
+        rotation = rotation * 100 / max;
     }
 
-    double m1 = x_speed / 2 + y_speed * sqrt(3) / 2 + w_speed;
-    double m2 = -x_speed + w_speed;
-    double m3 = x_speed / 2 - y_speed * sqrt(3) / 2 + w_speed;
+    if (direction == 0) // geradeaus
+    {
+        motor1.drive(-speed + rotation);
+        motor2.drive(+rotation);
+        motor3.drive(speed + rotation);
+    }
 
-    double max = std::max({std::abs(m1), std::abs(m2), std::abs(m3)});
+    if (direction == 1) // 60 Grad rechts
+    {
+        motor1.drive(+rotation);
+        motor2.drive(-speed + rotation);
+        motor3.drive(speed + rotation);
+    }
 
-    m1 = m1 / max * scale;
-    m2 = m2 / max * scale;
-    m3 = m3 / max * scale;
+    if (direction == -1) // -60 Grad links
+    {
+        motor1.drive(-speed + rotation);
+        motor2.drive(speed + rotation);
+        motor3.drive(+rotation);
+    }
 
-    Serial.print("m1: ");
-    Serial.println(m1);
-    Serial.print("m2: ");
-    Serial.println(m2);
-    Serial.print("m3: ");
-    Serial.println(m3);
-    Serial.println(" ");
+    if (direction == 3) // zurück
+    {
+        motor1.drive(speed + rotation);
+        motor2.drive(+rotation);
+        motor3.drive(-speed + rotation);
+    }
 
-    motor1.drive(static_cast<int>(m1));
-    motor2.drive(static_cast<int>(m2));
-    motor3.drive(static_cast<int>(m3));
+    if (direction == -2) // -120 Grad links
+    {
+        motor1.drive(+rotation);
+        motor2.drive(speed + rotation);
+        motor3.drive(-speed + rotation);
+    }
 
-
+    if (direction == 2) // 120 Grad rechts
+    {
+        motor1.drive(speed + rotation);
+        motor2.drive(-speed + rotation);
+        motor3.drive(+rotation);
+    }
 }
 
 
