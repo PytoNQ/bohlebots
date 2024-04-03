@@ -49,13 +49,13 @@ void Idle::runFirstCycle() {
 }
 
 void Play::main() {
-
     if (!bot.seesBall) {
         return;
     }
     if (!bot.hasBall) {
         tryGetBall();
     }
+
 }
 
 void Play::runFirstCycle() {
@@ -89,9 +89,10 @@ void Anstoss::runFirstCycle() {
 }
 
 void Debug::main() {
-
+    bot.drive(1, 0, 0, 50);
 }
 
 void Debug::runFirstCycle() {
-
+    bot.set_i2c_LED(1, 1, ROT);
+    bot.setCompassHeading();
 }

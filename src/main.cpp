@@ -2,6 +2,7 @@
 #include <memory>
 #include "play.h"
 
+bool isEnabled = false;
 Strategy *strategies[] = {new Idle(), new Play(), new Anstoss(1), new Anstoss(-1), new Debug()};
 int strategyColors[5] = {AUS, GRUEN, BLAU, ROT, MAGENTA};
 int currentStrategy = 0;
@@ -37,8 +38,11 @@ void testButtons() {
 }
 
 void loop() {
-    bot.wait(100);
+    bot.wait(5);
     testButtons();
     strategies[currentStrategy]->run();
-    Serial.println(bot.getInput(4));
+    Serial.println(bot.compassDirection);
+    if (bot.getBoardButton(2)) {
+        bot.setCompassHeading();
+    }
 }

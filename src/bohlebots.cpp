@@ -362,7 +362,7 @@ void Motor::setSpeed(int speed) {
 
 
 void Motor::updateMotorSpeed() {
-    return; //TDOD fix
+    return; //TODO fix
     if (nominalSpeed == currentSpeed) {
         return;
     }
