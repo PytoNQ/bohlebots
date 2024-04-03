@@ -95,7 +95,7 @@ public:
 
     void wait(int ms);
 
-    void drive(double x, double y, double w, int scale);
+    void drive(int direction, int speed, int rotation);
 
     int getInput(int input);
 
