@@ -140,9 +140,9 @@ private:
     int _i2c_led2_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 
-    Motor motor1 = Motor(DRIVE1_DIR, 1); // links
-    Motor motor2 = Motor(DRIVE2_DIR, 2); // rechts
-    Motor motor3 = Motor(DRIVE3_DIR, 3); // vorne
+    Motor motor1 = Motor(DRIVE1_DIR, 1); // rechts
+    Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
+    Motor motor3 = Motor(DRIVE3_DIR, 3); // links
 
 
 
