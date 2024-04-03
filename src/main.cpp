@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <memory>
 #include "play.h"
 
 bool isEnabled = false;
