@@ -2,10 +2,9 @@
 
 Bohlebots bot;
 
-#define US_BOT_OFFSET 0
 
-#define FIELD_X 0
-#define FIELD_Y 0
+#define FIELD_X 122
+#define FIELD_Y 183
 
 
 void Strategy::run(bool runFirstCycle, bool isEnabled) {
@@ -132,6 +131,9 @@ void Play::moveBehindBall() {
 }
 
 void Play::playOffensive() {
+    if (bot.seesGoal) {
+        bot.setRotation(bot.compassDirection + bot.goalDirection * 60);
+    }
 
 }
 

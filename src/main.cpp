@@ -42,6 +42,7 @@ void testButtons() {
 void loop() {
     bot.wait(5);
     testButtons();
-    strategies[currentStrategy]->run(false, isEnabled);
+//    strategies[currentStrategy]->run(false, isEnabled);
 
+    Serial.println(bot.goalDirection);
 }

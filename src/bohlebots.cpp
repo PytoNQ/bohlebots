@@ -105,9 +105,9 @@ void Bohlebots::updateBot() {
     getUSData();
     getCompassData();
     getPixyData();
-    motor1.updateMotorSpeed();
-    motor2.updateMotorSpeed();
-    motor3.updateMotorSpeed();
+//    motor1.updateMotorSpeed();
+//    motor2.updateMotorSpeed();
+//    motor3.updateMotorSpeed();
 }
 
 
@@ -190,10 +190,10 @@ void Bohlebots::getPixyData() {
     Block block = pixy.ccc.blocks[0];
     if (block.m_signature == 1) { // Goal
         seesGoal = true;
-        goalDirection = block.m_x - 79; //316/4; 316 is pixy width
+        goalDirection = block.m_x / 2 - 79; //316/4; 316 is pixy width
     } else if (block.m_signature == 2) { // own Goal
         seesOwnGoal = true;
-        ownGoalDirection = block.m_x - 79;
+        ownGoalDirection = block.m_x / 2 - 79;
     }
 }
 
@@ -354,12 +354,11 @@ Motor::Motor(int pin, int pwnChannel) {
 }
 
 void Motor::drive(int speed) {
-    this->nominalSpeed = speed;
     this->setSpeed(speed);
 }
 
 void Motor::setSpeed(int speed) {
-    this->currentSpeed = speed;
+//    this->currentSpeed = speed;
     speed = std::min(std::max(speed, -100), 100);
     int pwm = static_cast<int>(std::round(std::abs(speed) * 2.55));
     int dir = speed < 0 ? LOW : HIGH;
@@ -368,25 +367,32 @@ void Motor::setSpeed(int speed) {
 }
 
 
-void Motor::updateMotorSpeed() {
-    return; //TODO fix
-    if (nominalSpeed == currentSpeed) {
-        return;
-    }
-    unsigned long currentMillis = millis();
-    auto deltatime = static_cast<double>((currentMillis - lastRunMillis) / 1000.0);
-    lastRunMillis = currentMillis;
-    int change = static_cast<int>(round(static_cast<double>((nominalSpeed - currentSpeed)) * deltatime * 200));
-    setSpeed(currentSpeed + change);
-}
+
 
 /*
  * ---------------------- TIME BASED INT CHANGER ----------------------
  */
 
-void TimeBasedIntChanger::start(int _goal, int _duration) {
-    startTime = _duration();
+void TimeBasedIntChanger::change(int _goal, int _duration) {
+    goal = _goal;
     duration = _duration;
-    target = _goal;
+    startTime = millis();
 }
 
+void TimeBasedIntChanger::setDirectly(int _goal) {
+    goal = _goal;
+    number = _goal;
+}
+
+void TimeBasedIntChanger::update() {
+    unsigned long elapsed = millis() - startTime;
+    if (elapsed >= duration) {
+        number = goal;
+    } else {
+        number = number + (goal - number) * (static_cast<float>(elapsed) / duration);
+    }
+}
+
+int TimeBasedIntChanger::getNumber() {
+    return number;
+}

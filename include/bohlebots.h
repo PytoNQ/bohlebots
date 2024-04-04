@@ -49,25 +49,6 @@ enum FARBE {
 #define US_ADDRESS 0x56
 #define COMPASS_ADDRESS 0x60
 
-class Motor {
-public:
-    Motor(int pin, int pwnChannel);
-
-    void drive(int speed);
-
-    void updateMotorSpeed();
-
-    void setSpeed(int speed);
-
-
-private:
-
-    int nominalSpeed = 0;
-    int currentSpeed = 0;
-    int pin;
-    int pwnChannel;
-    unsigned long lastRunMillis = 0;
-};
 
 class TimeBasedIntChanger {
     unsigned long startTime = 0;
@@ -75,9 +56,31 @@ class TimeBasedIntChanger {
     int duration = 0;
     int goal = 0;
 public:
-    void start(int _goal, int _duration);
+    void change(int _goal, int _duration);
+
+    void setDirectly(int _goal);
+
+    int getNumber();
 
     void update();
+};
+
+
+class Motor {
+public:
+    Motor(int pin, int pwnChannel);
+
+    void drive(int speed);
+
+
+    void setSpeed(int speed);
+
+
+private:
+    TimeBasedIntChanger speedChanger;
+    int pin;
+    int pwnChannel;
+
 };
 
 class Bohlebots {

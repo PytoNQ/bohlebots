@@ -58,6 +58,8 @@ private:
 
 
     void moveToOwnGoal();
+
+    void playOffensive();
 };
 
 
