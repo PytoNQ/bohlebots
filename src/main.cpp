@@ -5,10 +5,11 @@
 bool isEnabled = false;
 Strategy *strategies[] = {new Idle(), new Play(), new Anstoss(1), new Anstoss(-1), new Debug()};
 int strategyColors[5] = {AUS, GRUEN, BLAU, ROT, MAGENTA};
-int currentStrategy = 0;
+int currentStrategy = 4;
 
 void setup() {
     bot.init();
+    bot.setBoardLED(1, strategyColors[currentStrategy]);
 }
 
 
@@ -16,6 +17,7 @@ bool modusButtonPressed = false;
 
 void testButtons() {
     bot.setBoardLED(2, bot.getInput(1) ? ROT : GRUEN);
+
 
     if (bot.get_i2c_Button(1, 1)) {
         if (currentStrategy == 0) {
@@ -33,16 +35,18 @@ void testButtons() {
         if (!modusButtonPressed) {
             modusButtonPressed = true;
             isEnabled = false;
-            currentStrategy = (currentStrategy + 1) % sizeof(strategies);
+            currentStrategy = (currentStrategy + 1) % 5;
             bot.setBoardLED(1, strategyColors[currentStrategy]);
         }
     } else { modusButtonPressed = false; }
+
 }
+
 
 void loop() {
     bot.wait(5);
     testButtons();
-//    strategies[currentStrategy]->run(false, isEnabled);
+    strategies[currentStrategy]->run(false, isEnabled);
 
-    Serial.println(bot.goalDirection);
 }
+

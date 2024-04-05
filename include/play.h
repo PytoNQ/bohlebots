@@ -88,6 +88,7 @@ private:
     void disabledFunction() override;
 
     void firstCycleFunction() override;
+
 };
 
 

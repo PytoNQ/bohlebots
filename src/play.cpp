@@ -152,7 +152,18 @@ void Anstoss::firstCycleFunction() {
 }
 
 void Debug::main() {
+    rotateToCenter();
+    return;
+    for (int speed = 0; speed < 100; speed += 10) {
+        for (int time = 0; time < 1500; time += 100) {
+            for (int i = 0; i < 3; i++) {
+                testRotation(speed, time);
+
+            }
+        }
+    }
 }
+
 
 void Debug::disabledFunction() {
 
