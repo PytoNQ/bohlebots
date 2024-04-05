@@ -95,7 +95,10 @@ public:
 
     void wait(int ms);
 
-    void drive(int direction, int speed);
+    void drive(int direction, int speed, int rotation = 0);
+
+    void omnidrive(double x_speed, double y_speed, double w_speed, int scale);
+
 
 
     int getInput(int input);
@@ -111,6 +114,8 @@ public:
     void setCompassHeading();
 
     void setRotation(int _botRotation);
+
+    void changeRotation(int _botRotation);
 
 
     int distances[4] = {0, 0, 0, 0};

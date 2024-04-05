@@ -80,6 +80,8 @@ void Bohlebots::init() {
         pixy.init(PIXY_ADDRESS);
     }
 
+    setCompassHeading();
+
     Serial.print("Compass : ");
     Serial.println(isCompassEnabled ? "true" : "false");
     Serial.print("Pixy : ");
@@ -88,6 +90,8 @@ void Bohlebots::init() {
 }
 
 void Bohlebots::wait(int ms) {
+
+
     delayMillisTimer = 0;
     updateBot();
     while (delayMillisTimer < ms) {
@@ -286,10 +290,10 @@ int Bohlebots::getInput(int input) {
  * ---------------------- FAHREN -----------------------
  */
 
-void Bohlebots::drive(int direction, int speed) {
+void Bohlebots::drive(int direction, int speed, int rotation) {
     int rotationOffset = botRotation - compassDirection;
 
-    int rotation = sqrt(rotationOffset) * 2;
+
     direction /= 60;
     int max = std::abs(speed) + std::abs(rotation);
     if (max > 100) {
@@ -339,6 +343,55 @@ void Bohlebots::drive(int direction, int speed) {
         motor3.drive(+rotation);
     }
 }
+
+void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int scale) {
+
+    int maxW = 20;
+    int factor = 8;
+
+    double rotationOffset = botRotation - compassDirection;
+
+    w_speed = -exp(-abs(rotationOffset) / factor) * maxW + maxW;
+
+
+    w_speed *= (rotationOffset > 0 ? -1 : 1);
+
+
+    double m1 = (-x_speed / 2 + y_speed * sqrt(3) / 2) * scale;
+    double m2 = (x_speed) * scale;
+    double m3 = (-x_speed / 2 - y_speed * sqrt(3) / 2) * scale;
+
+//    Serial.print("m1: ");
+//    Serial.println(m1);
+//    Serial.print("m2: ");
+//    Serial.println(m2);
+//    Serial.print("m3: ");
+//    Serial.println(m3);
+
+
+    double max = std::max({std::abs(m1 + w_speed), std::abs(m2 + w_speed), std::abs(m3 + w_speed)});
+
+//    Serial.print("max: ");
+//    Serial.println(max);
+
+    if (max > 100) {
+        m1 = m1 * (100 - w_speed) / max;
+        m2 = m2 * (100 - w_speed) / max;
+        m3 = m3 * (100 - w_speed) / max;
+    }
+
+    m1 += w_speed;
+    m2 += w_speed;
+    m3 += w_speed;
+
+
+    motor1.drive(static_cast<int>(m1));
+    motor2.drive(static_cast<int>(m2));
+    motor3.drive(static_cast<int>(m3));
+
+
+}
+
 
 void Bohlebots::setRotation(int _botRotation) {
     botRotation = _botRotation;
