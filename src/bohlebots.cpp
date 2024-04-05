@@ -346,12 +346,18 @@ void Bohlebots::drive(int direction, int speed, int rotation) {
 
 void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int scale) {
 
+    int maxVector = std::max(std::abs(x_speed), std::abs(y_speed));
+
+
+    x_speed = x_speed / maxVector;
+    y_speed = y_speed / maxVector;
+
     int maxW = 20;
     int factor = 8;
 
     double rotationOffset = botRotation - compassDirection;
 
-    w_speed = -exp(-abs(rotationOffset) / factor) * maxW + maxW;
+    w_speed += -exp(-abs(rotationOffset) / factor) * maxW + maxW;
 
 
     w_speed *= (rotationOffset > 0 ? -1 : 1);
