@@ -105,7 +105,7 @@ void Bohlebots::wait(int ms) {
 
 void Bohlebots::updateBot() {
     sync_i2c_IO();
-//    getIRData();
+    getIRData();
     getUSData();
     getCompassData();
     getPixyData();
@@ -144,6 +144,9 @@ void Bohlebots::sync_i2c_IO() {
 }
 
 void Bohlebots::getIRData() {
+//    return;''
+    hasBall = false;//getInput(4) > 3500;
+
     int irRingData = 0;
     Wire.requestFrom(IR_ADDRESS, 1);
     if (Wire.available()) {
@@ -213,6 +216,18 @@ void Bohlebots::getUSData() {
 /*
  * ---------------------- IO ----------------------
  */
+
+void Bohlebots::turnLEDsOff() {
+    setBoardLED(1, AUS);
+    setBoardLED(2, AUS);
+    for (int i = 0; i < 8; i++) {
+        if (!is_i2c_port_enabled[i]) {
+            continue;
+        }
+        set_i2c_LED(i, 1, 0);
+        set_i2c_LED(i, 2, 0);
+    }
+}
 
 void Bohlebots::set_i2c_LED(int device, int nr, int color) {
     if (device < 0 || device > 7) {
@@ -349,9 +364,10 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
     int maxVector = std::max(std::abs(x_speed), std::abs(y_speed));
 
 
-    x_speed = x_speed / maxVector;
-    y_speed = y_speed / maxVector;
-
+    if (maxVector != 0) {
+        x_speed = x_speed / maxVector;
+        y_speed = y_speed / maxVector;
+    }
     int maxW = 20;
     int factor = 8;
 
@@ -367,14 +383,6 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
     double m2 = (x_speed) * scale;
     double m3 = (-x_speed / 2 - y_speed * sqrt(3) / 2) * scale;
 
-//    Serial.print("m1: ");
-//    Serial.println(m1);
-//    Serial.print("m2: ");
-//    Serial.println(m2);
-//    Serial.print("m3: ");
-//    Serial.println(m3);
-
-
     double max = std::max({std::abs(m1 + w_speed), std::abs(m2 + w_speed), std::abs(m3 + w_speed)});
 
 //    Serial.print("max: ");
@@ -389,6 +397,13 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
     m1 += w_speed;
     m2 += w_speed;
     m3 += w_speed;
+
+    Serial.print("m1: ");
+    Serial.println(m1);
+    Serial.print("m2: ");
+    Serial.println(m2);
+    Serial.print("m3: ");
+    Serial.println(m3);
 
 
     motor1.drive(static_cast<int>(m1));
@@ -419,7 +434,7 @@ void Motor::drive(int speed) {
 void Motor::setSpeed(int speed) {
 //    this->currentSpeed = speed;
     speed = std::min(std::max(speed, -100), 100);
-    int pwm = static_cast<int>(std::round(std::abs(speed) * 2.55));
+    int pwm = static_cast<int>(std::round(std::abs(speed) * 255 / 100));
     int dir = speed < 0 ? LOW : HIGH;
     digitalWrite(pin, dir);
     ledcWrite(pwnChannel, pwm);

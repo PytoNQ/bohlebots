@@ -115,7 +115,7 @@ public:
 
     void setRotation(int _botRotation);
 
-    void changeRotation(int _botRotation);
+    void turnLEDsOff();
 
 
     int distances[4] = {0, 0, 0, 0};

@@ -38,6 +38,7 @@ void testButtons() {
             currentStrategy = (currentStrategy + 1) % 5;
             bot.setBoardLED(1, strategyColors[currentStrategy]);
         }
+        bot.turnLEDsOff();
     } else { modusButtonPressed = false; }
 
 }

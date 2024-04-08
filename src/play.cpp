@@ -23,6 +23,7 @@ void Strategy::run(bool runFirstCycle, bool isEnabled) {
 
 
 void Idle::main() {
+    bot.omnidrive(0, 0, 0, 0);
     if (bot.seesBall) {
         bot.set_i2c_LED(1, 1, BLAU);
     } else {
@@ -63,7 +64,6 @@ void Play::main() {
 
 
 void Play::firstCycleFunction() {
-    bot.set_i2c_LED(1, 1, BLAU);
     bot.setCompassHeading();
 }
 
@@ -82,14 +82,16 @@ void Play::moveToOwnGoal() {
     int offsetToCenter_X = (bot.distances[1] - bot.distances[3]) / 2;
     int distanceToGoal = bot.distances[2] - FIELD_Y / 10; // wanted distance from goal
 
-    if (abs(distanceToGoal) <= 5) { //TODO: adjust value
-        bot.drive(0, 0);
-        return;
-    }
-    if (abs(offsetToCenter_X) >= 5) { //TODO: adjust value
-        bot.drive(120 * offsetToCenter_X > 0 ? 1 : -1, 100);
-    }
-    bot.drive(0, distanceToGoal > 0 ? 100 : -100);
+
+    bot.omnidrive(offsetToCenter_X, distanceToGoal, 0, 50);
+//    if (abs(distanceToGoal) <= 5) { //TODO: adjust value
+//        bot.drive(0, 0);
+//        return;
+//    }
+//    if (abs(offsetToCenter_X) >= 5) { //TODO: adjust value
+//        bot.drive(120 * offsetToCenter_X > 0 ? 1 : -1, 100);
+//    }
+//    bot.drive(0, distanceToGoal > 0 ? 100 : -100);
 
 }
 
@@ -97,10 +99,33 @@ void Play::moveToOwnGoal() {
 
 
 void Play::tryGetBall() {
-    if (abs(bot.ballDirection) >= 3) {
-        moveBehindBall();
-        return;
+    bot.setRotation(0);
+    int absoluteBallDirection = abs(bot.ballDirection);
+
+    int x_vector, y_vector, scale;
+    if (absoluteBallDirection == 8) {
+        x_vector = (bot.distances[1] > bot.distances[3]) ? 1 : -1;
+    } else if (absoluteBallDirection == 7) {
+        x_vector = (bot.ballDirection > 0) ? -1 : 1;
+        y_vector = -1;
+    } else if (absoluteBallDirection == 6) {
+        x_vector = (bot.ballDirection > 0) ? -1 : 1;
+        y_vector = -2;
+    } else if (absoluteBallDirection >= 3) {
+        x_vector = 0;
+        y_vector = -1;
+    } else if (absoluteBallDirection == 2) {
+        y_vector = -1;
+        x_vector = (bot.ballDirection > 0) ? 5 : -5;
+    } else if (absoluteBallDirection == 1) {
+        y_vector = -1;
+        x_vector = (bot.ballDirection > 0) ? 10 : -10;
+    } else {
+        x_vector = 0;
+        y_vector = 1;
     }
+
+
     if (abs(bot.ballDirection) != 0) {
         int angularBallDirection = bot.ballDirection * 360 / 16;
 
@@ -117,18 +142,7 @@ void Play::tryGetBall() {
 
 }
 
-void Play::moveBehindBall() {
-    bot.setRotation(0);
-    if (abs(bot.ballDirection) <=
-        6) { //TODO kann ich bei 7 auch gerade nach hinten fahren?, lohnt es sich mehr, schon ab z.b. 5 mit 120° zu fahren, um zeit zu sparen
-        bot.drive(180, 100);
-        return;
-    }
-    // Ball liegt so hinter mir, dass ich nicht gerade fahren kann
 
-    int direction = 120 * (bot.distances[1] > bot.distances[3] ? 1 : -1); //TODO berücksichtigung des anderen bots?
-    bot.drive(direction, 100);
-}
 
 void Play::playOffensive() {
     if (bot.seesGoal) {
@@ -152,16 +166,21 @@ void Anstoss::firstCycleFunction() {
 }
 
 void Debug::main() {
-    rotateToCenter();
-    return;
-    for (int speed = 0; speed < 100; speed += 10) {
-        for (int time = 0; time < 1500; time += 100) {
-            for (int i = 0; i < 3; i++) {
-                testRotation(speed, time);
-
-            }
-        }
+    int cornerGoalDirection = 1;
+    if (bot.compassDirection * -1 * cornerGoalDirection > 20) {
+        bot.omnidrive(-3 * cornerGoalDirection, 2, 0, 50);
+        bot.set_i2c_LED(1, 1, BLAU);
+        return;
     }
+    if (bot.seesGoal && bot.goalDirection * cornerGoalDirection < 20) {
+        bot.setRotation(0);
+        bot.omnidrive(cornerGoalDirection * 3, 4, 0, 30);
+        bot.set_i2c_LED(1, 1, GELB);
+        return;
+    }
+    bot.setRotation(cornerGoalDirection * 10);
+    bot.set_i2c_LED(1, 1, ROT);
+    bot.omnidrive(cornerGoalDirection * 5, 2, 0, 50);
 }
 
 
@@ -170,5 +189,5 @@ void Debug::disabledFunction() {
 }
 
 void Debug::firstCycleFunction() {
-    bot.setCompassHeading();
+//    bot.setCompassHeading();
 }
