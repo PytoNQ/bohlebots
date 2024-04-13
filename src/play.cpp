@@ -39,6 +39,7 @@ void Idle::main() {
 }
 
 void Idle::disabledFunction() {
+    bot.stop();
     bot.set_i2c_LED(1, 1, 0);
     bot.set_i2c_LED(1, 2, 0);
 }
@@ -80,10 +81,11 @@ void Play::moveToOwnGoal() {
 
     // Calculate x_position of bot
     int offsetToCenter_X = (bot.distances[1] - bot.distances[3]) / 2;
-    int distanceToGoal = bot.distances[2] - FIELD_Y / 10; // wanted distance from goal
+
+    int distanceToGoal = -bot.distances[2] + FIELD_Y / 10; // wanted distance from goal
 
 
-    bot.omnidrive(offsetToCenter_X, distanceToGoal, 0, 50);
+    bot.omnidrive(offsetToCenter_X, distanceToGoal * 0, 0, 50);
 //    if (abs(distanceToGoal) <= 5) { //TODO: adjust value
 //        bot.drive(0, 0);
 //        return;
@@ -102,7 +104,9 @@ void Play::tryGetBall() {
     bot.setRotation(0);
     int absoluteBallDirection = abs(bot.ballDirection);
 
-    int x_vector, y_vector, scale;
+    int x_vector = 0;
+    int y_vector = 0;
+    int scale = 100;
     if (absoluteBallDirection == 8) {
         x_vector = (bot.distances[1] > bot.distances[3]) ? 1 : -1;
     } else if (absoluteBallDirection == 7) {
@@ -116,30 +120,16 @@ void Play::tryGetBall() {
         y_vector = -1;
     } else if (absoluteBallDirection == 2) {
         y_vector = -1;
-        x_vector = (bot.ballDirection > 0) ? 5 : -5;
+        x_vector = (bot.ballDirection > 0) ? 2 : -2;
     } else if (absoluteBallDirection == 1) {
         y_vector = -1;
-        x_vector = (bot.ballDirection > 0) ? 10 : -10;
-    } else {
+        x_vector = (bot.ballDirection > 0) ? 2 : -2;
+    } else if (absoluteBallDirection == 0) {
         x_vector = 0;
         y_vector = 1;
     }
-
-
-    if (abs(bot.ballDirection) != 0) {
-        int angularBallDirection = bot.ballDirection * 360 / 16;
-
-        if (abs(bot.compassDirection + angularBallDirection) < 50) {
-            bot.setRotation(bot.compassDirection + angularBallDirection);
-        } else {
-            bot.setRotation(0);
-        }
-    } else if (bot.ballDirection == 0) {
-        bot.drive(0, 100);
-    }
-
-
-
+    Serial.println(bot.ballDirection);
+    bot.omnidrive(x_vector, y_vector, 0, scale);
 }
 
 

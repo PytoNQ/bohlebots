@@ -359,6 +359,12 @@ void Bohlebots::drive(int direction, int speed, int rotation) {
     }
 }
 
+void Bohlebots::stop() {
+    motor1.drive(0);
+    motor2.drive(0);
+    motor3.drive(0);
+}
+
 void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int scale) {
 
     int maxVector = std::max(std::abs(x_speed), std::abs(y_speed));
@@ -398,12 +404,12 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
     m2 += w_speed;
     m3 += w_speed;
 
-    Serial.print("m1: ");
-    Serial.println(m1);
-    Serial.print("m2: ");
-    Serial.println(m2);
-    Serial.print("m3: ");
-    Serial.println(m3);
+//    Serial.print("m1: ");
+//    Serial.println(m1);
+//    Serial.print("m2: ");
+//    Serial.println(m2);
+//    Serial.print("m3: ");
+//    Serial.println(m3);
 
 
     motor1.drive(static_cast<int>(m1));

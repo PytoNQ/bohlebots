@@ -99,6 +99,8 @@ public:
 
     void omnidrive(double x_speed, double y_speed, double w_speed, int scale);
 
+    void stop();
+
 
 
     int getInput(int input);
