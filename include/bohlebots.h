@@ -37,6 +37,8 @@ enum FARBE {
 #define DRIVE2_DIR 12
 #define DRIVE3_PWM 25
 #define DRIVE3_DIR 26
+#define DRIVE4_PWM 32
+#define DRIVE4_DIR 33
 
 
 #define INPUT1 35
@@ -171,6 +173,10 @@ private:
     Motor motor1 = Motor(DRIVE1_DIR, 1); // rechts
     Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
     Motor motor3 = Motor(DRIVE3_DIR, 3); // links
+
+    Motor dribbler = Motor(DRIVE4_DIR, 4); // dribbler
+
+
 
 
     int botRotation = 0;

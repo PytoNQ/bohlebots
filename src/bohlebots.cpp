@@ -14,6 +14,7 @@ Bohlebots::Bohlebots() {
     pinMode(DRIVE1_DIR, OUTPUT);
     pinMode(DRIVE2_DIR, OUTPUT);
     pinMode(DRIVE3_DIR, OUTPUT);
+    pinMode(DRIVE4_DIR, OUTPUT);
 
     pinMode(INPUT1, INPUT);
     pinMode(INPUT2, INPUT);
@@ -44,6 +45,7 @@ Bohlebots::Bohlebots() {
     ledcAttachPin(DRIVE3_PWM, 3);
     ledcSetup(3, 1000, 8);
     ledcWrite(3, 0);
+    ledcAttachPin(DRIVE4_PWM, 4);
     ledcSetup(4, 1000, 8);
     ledcWrite(4, 0);
     setBoardLED(1, AUS);
@@ -375,7 +377,7 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
         y_speed = y_speed / maxVector;
     }
     int maxW = 20;
-    int factor = 8;
+    int factor = 15 - (7 * scale / 100);
 
     double rotationOffset = botRotation - compassDirection;
 
