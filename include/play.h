@@ -8,8 +8,14 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include "bohlebots.h"
+#include "espOTA.h"
+#import "ncSerial.h"
+
+#define ENABLE_WIFI false
 
 extern Bohlebots bot;
+extern espOTA ota;
+extern ncSerial nc;
 
 int getSign(int num);
 
@@ -60,6 +66,34 @@ private:
     void moveToOwnGoal();
 
     void playOffensive();
+
+    void checkLackOfProgress();
+
+    bool isLackOfProgress = false;
+
+    bool lastBallPossession = false;
+    elapsedMillis timeSinceLastBallPossessionChange = 0;
+
+    int lastBallDirection = 0;
+    elapsedMillis timeSinceLastBallDirectionChange = 0;
+
+    int lastCompassDirection = 0;
+    elapsedMillis timeSinceLastCompassDirectionChange = 0;
+    int compassNoiseLimit = 3;
+
+    int lastDistances[4] = {0, 0, 0, 0};
+    elapsedMillis timeSinceLastDistanceChange[4] = {0, 0, 0, 0};
+    int distanceNoiseLimit = 5;
+
+    int corner = 0;
+    elapsedMillis cornerTimer = 0;
+
+
+    void evaluateSensorData();
+
+    int approx_x; //range from -2 to 2; far-left to far-right
+    int approx_y; //range from -2 to 2; far-back to far-front
+    void executeCorners();
 };
 
 
@@ -77,6 +111,31 @@ private:
     int direction = 0;
 };
 
+class i2cScanner : public Strategy {
+public:
+    i2cScanner() : Strategy() {}
+
+private:
+    void main() override;
+
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
+
+};
+
+class motorTest : public Strategy {
+public:
+    motorTest() : Strategy() {}
+
+private:
+    void main() override;
+
+    void disabledFunction() override;
+
+    void firstCycleFunction() override;
+
+};
 
 class Debug : public Strategy {
 public:

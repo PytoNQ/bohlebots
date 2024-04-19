@@ -77,6 +77,8 @@ public:
 
     void setSpeed(int speed);
 
+    void test(int delayTime);
+
 
 private:
     TimeBasedIntChanger speedChanger;
@@ -139,6 +141,12 @@ public:
     int compassDirection = 0;
 
 
+    Motor motor1 = Motor(DRIVE1_DIR, 1); // rechts
+    Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
+    Motor motor3 = Motor(DRIVE3_DIR, 3); // links
+
+    Motor dribbler = Motor(DRIVE4_DIR, 4); // dribbler
+
 private:
     void setRGB(int r, int g, int b, int color);
 
@@ -158,6 +166,9 @@ private:
     elapsedMillis delayMillisTimer = 0;
     bool isCompassEnabled = false;
     bool isPixyEnabled = false;
+    bool isIREnabled = false;
+    bool isUSEnabled = false;
+
     Pixy2I2C pixy;
     bool is_i2c_port_enabled[8] =
             {false, false, false, false, false, false, false, false};
@@ -170,13 +181,7 @@ private:
     int _i2c_led2_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 
-    Motor motor1 = Motor(DRIVE1_DIR, 1); // rechts
-    Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
-    Motor motor3 = Motor(DRIVE3_DIR, 3); // links
-
-    Motor dribbler = Motor(DRIVE4_DIR, 4); // dribbler
-
-
+    elapsedMillis lightBarrierTimer = 0;
 
 
     int botRotation = 0;

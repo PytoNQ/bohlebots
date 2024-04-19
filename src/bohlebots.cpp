@@ -82,6 +82,21 @@ void Bohlebots::init() {
         pixy.init(PIXY_ADDRESS);
     }
 
+    delay(100);
+    Wire.beginTransmission(IR_ADDRESS);
+    error = Wire.endTransmission();
+    if (error == 0) {
+        isIREnabled = true;
+    }
+
+    delay(100);
+    Wire.beginTransmission(US_ADDRESS);
+    error = Wire.endTransmission();
+    if (error == 0) {
+        isUSEnabled = true;
+    }
+
+
     setCompassHeading();
 
     Serial.print("Compass : ");
@@ -146,8 +161,12 @@ void Bohlebots::sync_i2c_IO() {
 }
 
 void Bohlebots::getIRData() {
-//    return;''
-    hasBall = false;//getInput(4) > 3500;
+
+    if (getInput(4) > 1000) {
+        lightBarrierTimer = 0;
+    }
+
+    hasBall = lightBarrierTimer < 75;
 
     int irRingData = 0;
     Wire.requestFrom(IR_ADDRESS, 1);
@@ -214,6 +233,7 @@ void Bohlebots::getUSData() {
 
     }
 }
+
 
 /*
  * ---------------------- IO ----------------------
@@ -377,7 +397,7 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
         y_speed = y_speed / maxVector;
     }
     int maxW = 20;
-    int factor = 15 - (7 * scale / 100);
+    int factor = 22 - (7 * scale / 100);
 
     double rotationOffset = botRotation - compassDirection;
 
@@ -448,7 +468,9 @@ void Motor::setSpeed(int speed) {
     ledcWrite(pwnChannel, pwm);
 }
 
+void Motor::test(int delayTime) {
 
+}
 
 
 /*
