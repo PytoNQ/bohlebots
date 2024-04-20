@@ -94,6 +94,8 @@ private:
     int approx_x; //range from -2 to 2; far-left to far-right
     int approx_y; //range from -2 to 2; far-back to far-front
     void executeCorners();
+
+    void freeLackOfProgress();
 };
 
 

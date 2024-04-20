@@ -5,7 +5,7 @@
 bool isEnabled = false;
 Strategy *strategies[] = {new Idle(), new Play(), new Anstoss(1), new Anstoss(-1), new Debug()};
 int strategyColors[5] = {AUS, GRUEN, BLAU, ROT, MAGENTA};
-int currentStrategy = 0;
+int currentStrategy = 1;
 
 
 void setup() {
@@ -18,24 +18,25 @@ void setup() {
 
 
 bool modusButtonPressed = false;
+bool startButtonPressed = false;
 
 void testButtons() {
     bot.setBoardLED(2, bot.getInput(1) ? ROT : GRUEN);
 
 
-    if (bot.get_i2c_Button(1, 1)) {
-        if (currentStrategy == 0) {
-            currentStrategy = 1;
-        }
-        Serial.println("Strategy enabled");
-        strategies[currentStrategy]->run(true, true);
-        isEnabled = true;
-    }
     if (bot.get_i2c_Button(1, 2)) {
-        Serial.println("Strategy disabled");
-        isEnabled = false;
-        currentStrategy = 0;
-
+        bot.setCompassHeading();
+    }
+    if (bot.get_i2c_Button(1, 1)) {
+        if (!startButtonPressed) {
+            isEnabled = !isEnabled;
+            startButtonPressed = true;
+            if (isEnabled) {
+                strategies[currentStrategy]->run(true, true);
+            }
+        }
+    } else {
+        startButtonPressed = false;
     }
     if (bot.getBoardButton(1)) {
         if (!modusButtonPressed) {
@@ -57,13 +58,16 @@ void loop() {
     testButtons();
     strategies[currentStrategy]->run(false, isEnabled);
 
-    //print all distances over nc in one line. use string combination
-    //nc.sendMessage("distances: " + String(bot.distances[0]) + " " + String(bot.distances[1]) + " " + String(bot.distances[2]) + " " + String(bot.distances[3]));
-    nc.sendMessage("ball " + String(bot.getInput(4)) + " pos " + String(bot.hasBall ? "true" : "false"));
-//    nc.sendMessage("ball: " + String(bot.ballDirection));
     ota.handle();
     nc.handle();
 
+    Serial.println(bot.hasBall ? "true" : "false");
+//
+//    for(int i = 0; i < 4; i++){
+//        Serial.print(bot.distances[i]);
+//        Serial.print(" ");
+//    }
+//    Serial.println();
 
 
 }

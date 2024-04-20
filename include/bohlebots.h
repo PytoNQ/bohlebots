@@ -140,6 +140,9 @@ public:
 
     int compassDirection = 0;
 
+    int acceleration[2] = {0, 0,};
+    bool isAccelerating = false;
+
 
     Motor motor1 = Motor(DRIVE1_DIR, 1); // rechts
     Motor motor2 = Motor(DRIVE2_DIR, 2); // hinten
@@ -180,13 +183,22 @@ private:
     int _i2c_led1_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int _i2c_led2_array[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+    const uint8_t acceleration_high_adresses[3] = {0x0C, 0x0E, 0x10}; //x,y,z-axis
+
+
 
     elapsedMillis lightBarrierTimer = 0;
+
+    elapsedMillis accelerationTimer = 0;
 
 
     int botRotation = 0;
 
 
+    void checkForMovement();
+
+
+    void calculateAcceleration();
 };
 
 

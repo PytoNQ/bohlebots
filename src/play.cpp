@@ -51,6 +51,9 @@ void Idle::firstCycleFunction() {
 
 void Play::main() {
     checkLackOfProgress();
+
+    bot.set_i2c_LED(1, 1, corner == 0 ? 0 : ROT);
+
     if (corner != 0) {
         executeCorners();
         return;
@@ -59,9 +62,9 @@ void Play::main() {
         moveToOwnGoal();
         return;
     }
-    if (!bot.hasBall) {
+    if (!bot.hasBall || true) {//TODO fix pixy + light barrier
         tryGetBall();
-        nc.sendMessage("try get ball");
+//        nc.sendMessage("try get ball");
         return;
     }
     if (bot.hasBall) {
@@ -127,13 +130,24 @@ void Play::checkLackOfProgress() {
         corner *= 2;
     }
 
+    if (bot.distances[0] > 10 && bot.distances[0] < 800) {
+        int richtung = bot.distances[1] < bot.distances[3] ? -1 : 1;
+        bot.omnidrive(richtung, 0, 0, 90);
+    }
+
+
+
 
     if (bot.hasBall) {
         if (bot.distances[1] < 10 && bot.distances[3] < 10) {
             ///bot durch gegnerischen bot blockiert
         } else {
             //bot hat freie fahrt in eine richtung
-            corner = (bot.distances[1] > bot.distances[3]) ? 1 : -1;
+            int right = bot.distances[1] < 250 ? bot.distances[1] : 0;
+            int left = bot.distances[3] < 250 ? bot.distances[3] : 0;
+
+
+            corner = (right > left) ? 1 : -1;
             cornerTimer = 0;
         }
     }
@@ -142,7 +156,7 @@ void Play::checkLackOfProgress() {
 void Play::executeCorners() {
 //TODO differentiate corner 1 and 2
     int cornerGoalDirection = (corner < 0) ? -1 : 1;
-    cornerGoalDirection = -1; //TODO remove this line
+//    cornerGoalDirection = -1; //TODO remove this line
     if (bot.compassDirection * -1 * cornerGoalDirection > 20) {
         bot.omnidrive(-3 * cornerGoalDirection, 2, 0, 50);
         bot.set_i2c_LED(1, 1, BLAU);
@@ -155,8 +169,9 @@ void Play::executeCorners() {
         return;
     }
     bot.setRotation(cornerGoalDirection * 10);
-    bot.set_i2c_LED(1, 1, ROT);
-    bot.omnidrive(cornerGoalDirection * 5, 2, 0, 50);
+
+
+    bot.omnidrive(cornerGoalDirection * 5, 2, 0, abs(50 * corner));
 
 }
 
@@ -165,7 +180,7 @@ void Play::evaluateSensorData() {
 }
 
 void Play::firstCycleFunction() {
-    bot.setCompassHeading();
+//    bot.setCompassHeading(); //TODO
     timeSinceLastBallPossessionChange = 0;
     timeSinceLastBallDirectionChange = 0;
     timeSinceLastCompassDirectionChange = 0;
@@ -222,6 +237,7 @@ void Play::tryGetBall() {
     } else if (absoluteBallDirection >= 4) {
         x_vector = 0;
         y_vector = -1;
+
     } else if (absoluteBallDirection == 3) {
         x_vector = (bot.ballDirection > 0) ? 1 : -1;
         y_vector = -1;
@@ -244,6 +260,7 @@ void Play::tryGetBall() {
 
 
 void Play::playOffensive() {
+    return;
     if (bot.seesGoal) {
         bot.setRotation(bot.compassDirection + bot.goalDirection * 60);
     }

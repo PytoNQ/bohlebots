@@ -162,11 +162,12 @@ void Bohlebots::sync_i2c_IO() {
 
 void Bohlebots::getIRData() {
 
-    if (getInput(4) > 1000) {
+    if (getInput(4) > 4000) {
         lightBarrierTimer = 0;
     }
 
     hasBall = lightBarrierTimer < 75;
+
 
     int irRingData = 0;
     Wire.requestFrom(IR_ADDRESS, 1);
@@ -195,12 +196,62 @@ void Bohlebots::getCompassData() {
 
     }
 
+    calculateAcceleration();
+    checkForMovement();
+
 }
 
+void Bohlebots::calculateAcceleration() {
+    int data[] = {0, 0};
+
+    uint8_t error;
+    uint8_t high_byte;
+    uint8_t low_byte;
+
+
+    for (int i = 0; i < 2; i++) {
+        Wire.beginTransmission(COMPASS_ADDRESS);
+        Wire.write(acceleration_high_adresses[i]);
+        error = Wire.endTransmission();
+
+        if (error != 0) { return; }
+
+        Wire.requestFrom(COMPASS_ADDRESS, 2);
+        while (Wire.available() < 2) {}
+        high_byte = Wire.read();
+        low_byte = Wire.read();
+
+
+        data[i] = (int16_t) ((high_byte << 8) | low_byte);
+
+        acceleration[i] = static_cast<float>(data[i]) / 256.0 * 100;
+
+    }
+
+
+}
+
+
+void Bohlebots::checkForMovement() {
+    if (acceleration[0] < 60 && acceleration[1] < 60) {
+        if (accelerationTimer > 2000) {
+            isAccelerating = false;
+        }
+    } else {
+        accelerationTimer = 0;
+        isAccelerating = true;
+    }
+}
+
+
 void Bohlebots::setCompassHeading() {
+    set_i2c_LED(1, 1, BLAU);
     compassOffset = 0;
+    wait(50);
     getCompassData();
     compassOffset = compassDirection;
+    set_i2c_LED(1, 1, AUS);
+
 }
 
 void Bohlebots::getPixyData() {
@@ -396,7 +447,7 @@ void Bohlebots::omnidrive(double x_speed, double y_speed, double w_speed, int sc
         x_speed = x_speed / maxVector;
         y_speed = y_speed / maxVector;
     }
-    int maxW = 20;
+    int maxW = 25;
     int factor = 22 - (7 * scale / 100);
 
     double rotationOffset = botRotation - compassDirection;
